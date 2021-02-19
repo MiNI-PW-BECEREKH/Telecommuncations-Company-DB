@@ -1,0 +1,55 @@
+
+
+--stored procedure precompiled code
+
+CREATE PROCEDURE dbo.spTicket_Funktion
+	@Duration INT
+AS
+SET NOCOUNT ON
+
+	DECLARE @info INT
+	DECLARE @tic INT
+	DECLARE @emp INT
+	exec  @emp= dbo.randomMNGR
+
+	DECLARE ticket CURSOR LOCAL FOR SELECT TICKET_ID FROM TICKET
+		WHERE DATEDIFF(day,TICKET.START_DATE,CAST(GETDATE() AS DATE))   > @Duration
+
+	OPEN ticket
+		FETCH NEXT FROM ticket INTO @tic
+		WHILE @@FETCH_STATUS=0
+		BEGIN
+			INSERT INTO ENTRY(ACTIVITY_ID,EMPLOYEE_ID,TICKET_ID,DATE,DESCRIPTION)
+			VALUES ('AUDIT',@emp, @tic, CAST(GETDATE()AS DATE),'Audit Needed' )
+			FETCH NEXT FROM ticket INTO @tic
+		END
+	CLOSE ticket
+
+	--DECLARE actlog CURSOR LOCAL FOR SELECT * FROM ACTIVITY
+	--	JOIN ENTRY ON ACTIVITY.ACTIVITY_ID = ENTRY.ACTIVITY_ID
+	--	JOIN TICKET ON TICKET.TICKET_ID = ENTRY.TICKET_ID
+	
+	--OPEN actlog
+	--	FECTH 
+		--point 4
+
+	DECLARE informat CURSOR LOCAL FOR SELECT * FROM TICKET
+		WHERE DATEDIFF(day,TICKET.START_DATE,CAST(GETDATE() AS DATE))> @Duration
+
+	OPEN informat
+		FETCH NEXT FROM informat INTO @info
+		WHILE @@FETCH_STATUS=0
+		BEGIN
+			PRINT @info
+			FETCH NEXT INTO @info
+		END
+	CLOSE informat
+
+
+	DEALLOCATE informat
+
+
+GO
+
+Exec dbo.spTicket_Funktion 3
+
